@@ -1,0 +1,47 @@
+version: '3.8'
+
+services:
+#  auth-service:
+#    build: .
+#    container_name: auth-service
+#    ports:
+#      - "8080:8080"
+#    environment:
+#      SPRING_PROFILES_ACTIVE: docker
+#    networks:
+#      - backend-network
+#    depends_on:
+#      - backend-auth-postgres
+#      - dragonfly
+
+  backend-auth-postgres:
+    image: postgres:latest
+    container_name: backend-auth-postgres
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: auth
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    networks:
+      - backend-network
+
+  dragonfly:
+    image: docker.dragonflydb.io/dragonflydb/dragonfly
+    container_name: dragonfly
+    restart: always
+    command: ["--requirepass", "supersecret"]
+    ports:
+      - "6379:6379"
+    networks:
+      - backend-network
+
+volumes:
+  pgdata:
+
+networks:
+  backend-network:
+    driver: bridge
