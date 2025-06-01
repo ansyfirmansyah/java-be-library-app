@@ -8,12 +8,15 @@ import com.ansy.library.service.AuthService;
 import com.ansy.library.service.JwtService;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.MessageSource;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -26,6 +29,7 @@ public class AuthController {
     private final JwtService jwtService;
 
     @PostMapping("/register")
+    @Tag(name="Auth")
     public ResponseEntity<ApiResponse<String>> register(@Valid @RequestBody RegisterRequest request, HttpServletRequest http) {
         authService.register(request, http);
         String message = messageSource.getMessage("registration.success", null, LocaleContextHolder.getLocale());
@@ -33,6 +37,7 @@ public class AuthController {
     }
 
     @GetMapping("/verify")
+    @Tag(name="Auth")
     public ResponseEntity<ApiResponse<String>> verifyEmail(@RequestParam String token) {
         boolean result = authService.verifyEmail(token);
         String key = result ? "verification.success" : "verification.invalid";
@@ -41,16 +46,16 @@ public class AuthController {
     }
 
     @PostMapping("/login")
+    @Tag(name="Auth")
     public ApiResponse<LoginResponse> login(@Valid @RequestBody LoginRequest request, HttpServletRequest http) {
         return authService.login(request, http);
     }
 
     @PostMapping("/logout")
-    public ResponseEntity<ApiResponse> logout(@RequestHeader("Authorization") String authHeader) {
-        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-            return ResponseEntity.badRequest().body(ApiResponse.error("Token tidak ditemukan"));
-        }
-
+    @SecurityRequirement(name = "bearerAuth")
+    @Tag(name="Auth")
+    public ResponseEntity<ApiResponse<String>> logout(HttpServletRequest request) {
+        String authHeader = request.getHeader("Authorization");
         String token = authHeader.substring(7);
         Claims claims = jwtService.parseToken(token);
 
