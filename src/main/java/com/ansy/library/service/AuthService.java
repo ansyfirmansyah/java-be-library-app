@@ -175,4 +175,19 @@ public class AuthService {
                     .build());
         }
     }
+
+    public void logout(String userId, String sessionId) {
+        redisSessionService.invalidateSession(UUID.fromString(userId), sessionId);
+
+        auditRepository.save(UserActivityAudit.builder()
+                .id(UUID.randomUUID())
+                .userId(UUID.fromString(userId))
+                .email(null) // opsional, bisa ambil dari user repo
+                .activityType("LOGOUT")
+                .success(true)
+                .ipAddress(null) // bisa diisi dari request kalau mau
+                .userAgent(null)
+                .build()
+        );
+    }
 }

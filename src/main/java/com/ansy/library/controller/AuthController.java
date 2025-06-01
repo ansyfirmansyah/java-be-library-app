@@ -5,6 +5,9 @@ import com.ansy.library.dto.LoginRequest;
 import com.ansy.library.dto.LoginResponse;
 import com.ansy.library.dto.RegisterRequest;
 import com.ansy.library.service.AuthService;
+import com.ansy.library.service.JwtService;
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.Jwts;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -20,6 +23,7 @@ public class AuthController {
 
     private final AuthService authService;
     private final MessageSource messageSource;
+    private final JwtService jwtService;
 
     @PostMapping("/register")
     public ResponseEntity<ApiResponse<String>> register(@Valid @RequestBody RegisterRequest request, HttpServletRequest http) {
@@ -39,6 +43,23 @@ public class AuthController {
     @PostMapping("/login")
     public ApiResponse<LoginResponse> login(@Valid @RequestBody LoginRequest request, HttpServletRequest http) {
         return authService.login(request, http);
+    }
+
+    @PostMapping("/logout")
+    public ResponseEntity<ApiResponse> logout(@RequestHeader("Authorization") String authHeader) {
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            return ResponseEntity.badRequest().body(ApiResponse.error("Token tidak ditemukan"));
+        }
+
+        String token = authHeader.substring(7);
+        Claims claims = jwtService.parseToken(token);
+
+        String sessionId = claims.get("sid", String.class);
+        String userId = claims.get("uid", String.class);
+
+        authService.logout(userId, sessionId);
+        String message = messageSource.getMessage("logout.success", null, LocaleContextHolder.getLocale());
+        return ResponseEntity.ok(ApiResponse.success(message));
     }
 }
 

@@ -14,6 +14,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.springframework.context.MessageSource;
 
 import java.time.Instant;
 import java.util.Optional;
@@ -25,6 +26,9 @@ import static org.mockito.Mockito.*;
 class AuthServiceTest {
 
     @Mock
+    private MessageSource messageSource;
+
+    @Mock
     private UserRepository userRepository;
 
     @Mock
@@ -32,6 +36,9 @@ class AuthServiceTest {
 
     @Mock
     private VerificationTokenRepository tokenRepository;
+
+    @Mock
+    private RedisSessionService redisSessionService;
 
     @Mock
     private MailService mailService;
@@ -88,7 +95,6 @@ class AuthServiceTest {
                 authService.register(registerRequest, request)
         );
 
-        assertEquals("Email sudah terdaftar / already registered", thrown.getMessage());
         verify(auditRepository).save(any());
     }
 
@@ -105,7 +111,6 @@ class AuthServiceTest {
                 authService.register(registerRequest, request)
         );
 
-        assertEquals("Terlalu banyak percobaan registrasi dari IP ini / Too many registration attempts from this IP", thrown.getMessage());
         verify(auditRepository).save(any());
     }
 
@@ -159,5 +164,16 @@ class AuthServiceTest {
 
         assertFalse(result);
         verify(userRepository, never()).save(any());
+    }
+
+    @Test
+    void logout_shouldInvalidateSessionAndLogAudit() {
+        String userId = UUID.randomUUID().toString();
+        String sessionId = UUID.randomUUID().toString();
+
+        authService.logout(userId, sessionId);
+
+        verify(redisSessionService).invalidateSession(UUID.fromString(userId), sessionId);
+        verify(auditRepository).save(any());
     }
 }

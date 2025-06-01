@@ -6,6 +6,8 @@ import com.ansy.library.entity.User;
 import com.ansy.library.entity.VerificationToken;
 import com.ansy.library.repository.UserRepository;
 import com.ansy.library.repository.VerificationTokenRepository;
+import com.ansy.library.service.JwtService;
+import com.ansy.library.service.RedisSessionService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
@@ -41,6 +43,12 @@ public class AuthControllerIntegrationTest {
 
     @Autowired
     private StringRedisTemplate redisTemplate;
+
+    @Autowired
+    private JwtService jwtService;
+
+    @Autowired
+    private RedisSessionService redisSessionService;
 
     @AfterEach
     void cleanupRedisKeys() {
@@ -231,4 +239,45 @@ public class AuthControllerIntegrationTest {
                 .andExpect(jsonPath("$.message").exists());
     }
 
+    @Test
+    @Transactional
+    void logout_shouldInvalidateSessionAndReturnSuccess() throws Exception {
+        User user = new User();
+        user.setId(UUID.randomUUID());
+        user.setEmail("logoutuser@example.com");
+        user.setPassword("$2a$10$eUIidNd7dWn6CN5XLqg8E.VBCiAfq6a6xfQBKFAqox7KW2NvqSQiS"); // Password1
+        user.setEmailVerified(true);
+        user.setCreatedAt(Instant.now());
+        user.setUpdatedAt(Instant.now());
+        user = userRepository.save(user);
+
+        String sessionId = UUID.randomUUID().toString();
+        Instant issuedAt = Instant.now();
+        Instant expiredAt = issuedAt.plusSeconds(jwtService.getExpiration());
+
+        String token = jwtService.generateToken(user.getId(), "USER", sessionId, issuedAt, expiredAt);
+        redisSessionService.storeSession(user.getId(), sessionId, expiredAt);
+
+        mockMvc.perform(post("/auth/logout")
+                        .header("Authorization", "Bearer " + token)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success").value(true))
+                .andExpect(jsonPath("$.message").value("Berhasil logout"));
+    }
+
+    @Test
+    void logout_shouldReturnUnauthorized_whenSessionMissing() throws Exception {
+        UUID userId = UUID.randomUUID();
+        String sessionId = UUID.randomUUID().toString();
+        Instant now = Instant.now();
+        String token = jwtService.generateToken(userId, "USER", sessionId, now, now.plusSeconds(3600));
+
+        mockMvc.perform(post("/auth/logout")
+                        .header("Authorization", "Bearer " + token)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.success").value(false))
+                .andExpect(jsonPath("$.message").value("Invalid or expiry session"));
+    }
 }

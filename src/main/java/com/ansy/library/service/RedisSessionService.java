@@ -19,4 +19,14 @@ public class RedisSessionService {
         Duration ttl = Duration.between(Instant.now(), expiredAt);
         redisTemplate.opsForValue().set(key, "active", ttl);
     }
+
+    public void invalidateSession(UUID userId, String sessionId) {
+        String key = "SESSION:" + userId + ":" + sessionId;
+        redisTemplate.delete(key);
+    }
+
+    public boolean sessionExists(UUID userId, String sessionId) {
+        String key = "SESSION:" + userId + ":" + sessionId;
+        return Boolean.TRUE.equals(redisTemplate.hasKey(key));
+    }
 }

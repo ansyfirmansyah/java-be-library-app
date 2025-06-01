@@ -1,6 +1,7 @@
 package com.ansy.library.service;
 
 import com.ansy.library.config.AppProperties;
+import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
@@ -38,5 +39,13 @@ public class JwtService {
                 .setExpiration(Date.from(expiredAt))
                 .signWith(key, SignatureAlgorithm.HS256)
                 .compact();
+    }
+
+    public Claims parseToken(String token) {
+        return Jwts.parserBuilder()
+                .setSigningKey(key)
+                .build()
+                .parseClaimsJws(token)
+                .getBody();
     }
 }
