@@ -1,4 +1,4 @@
-# Layanan otentikasi untuk aplikasi Java Portofolio menggunakan Spring Boot.
+# Backend Service untuk perpustakaan online menggunakan Spring Boot.
 
 ## How to run:
 1. clone github repo
