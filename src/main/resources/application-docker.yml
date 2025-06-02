@@ -1,0 +1,70 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://backend-auth-postgres:5432/library-app
+    username: postgres
+    password: password
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: true
+    show-sql: true
+
+  data:
+    redis:
+      host: dragonfly
+      port: 6379
+      password: supersecret
+
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+
+  mail:
+    host: <your-smtp-host>
+    port: 587
+    username: <your-smtp-username>
+    password: <your-smtp-password>
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+
+server:
+  port: 8080
+
+logging:
+  level:
+    sql: debug
+    org:
+      springframework:
+        security: debug
+        web:
+          filter:
+            CommonsRequestLoggingFilter: debug
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus
+  endpoint:
+    health:
+      show-details: always
+  metrics:
+    export:
+      prometheus:
+        enabled: true
+
+app:
+  verification-url: http://localhost:8080/auth/verify
+  forgot-password-url: http://localhost:8080/auth/reset-password
+  mail-from: <your-smtp-username>
+  jwt-secret: AvengersDoomsdayThreeHundreds2025
+  jwt-expiration: 3600

@@ -1,18 +1,18 @@
 version: '3.8'
 
 services:
-#  auth-service:
-#    build: .
-#    container_name: auth-service
-#    ports:
-#      - "8080:8080"
-#    environment:
-#      SPRING_PROFILES_ACTIVE: docker
-#    networks:
-#      - backend-network
-#    depends_on:
-#      - backend-auth-postgres
-#      - dragonfly
+  be-library-service:
+    build: .
+    container_name: be-library-service
+    ports:
+      - "8080:8080"
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+    networks:
+      - backend-network
+    depends_on:
+      - backend-auth-postgres
+      - dragonfly
 
   backend-auth-postgres:
     image: postgres:latest
@@ -21,9 +21,9 @@ services:
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: password
-      POSTGRES_DB: auth
+      POSTGRES_DB: library-app
     volumes:
-      - pgdata:/var/lib/postgresql/data
+      - pgdata:/var/lib/postgresql-1/data
     ports:
       - "5432:5432"
     networks:
