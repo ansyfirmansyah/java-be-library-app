@@ -13,12 +13,16 @@ import org.springframework.context.MessageSource;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 import java.util.UUID;
 
 @Component
@@ -52,6 +56,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             Claims claims = jwtService.parseToken(token);
             String sessionId = claims.get("sid", String.class);
             UUID userId = UUID.fromString(claims.get("uid", String.class));
+            String role = claims.get("role", String.class);
+            List<GrantedAuthority> authorities = new ArrayList<>();
+            authorities.add(new SimpleGrantedAuthority("ROLE_" + role));
 
             if (!redisSessionService.sessionExists(userId, sessionId)) {
 //                response.setStatus(HttpStatus.UNAUTHORIZED.value());
@@ -62,7 +69,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             }
 
             UsernamePasswordAuthenticationToken auth =
-                    new UsernamePasswordAuthenticationToken(userId.toString(), null, Collections.emptyList());
+                    new UsernamePasswordAuthenticationToken(userId.toString(), null, authorities);
             SecurityContextHolder.getContext().setAuthentication(auth);
         } catch (JwtException | IllegalArgumentException e) {
 //            response.setStatus(HttpStatus.UNAUTHORIZED.value());

@@ -28,15 +28,6 @@ CREATE TABLE password_reset_tokens
     expires_at TIMESTAMP    NOT NULL
 );
 
--- PASSWORD CHANGE LOG
-CREATE TABLE password_change_log
-(
-    id                  UUID PRIMARY KEY,
-    user_id             UUID REFERENCES users (id) ON DELETE CASCADE,
-    old_hashed_password VARCHAR(255) NOT NULL,
-    changed_at          TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
-
 -- ACTIVITY AUDIT TRAIL (LOGIN, LOGOUT, RESET, VERIFY, etc)
 CREATE TABLE user_activity_audit
 (

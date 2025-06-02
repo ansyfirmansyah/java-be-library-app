@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/auth")
 @RequiredArgsConstructor
+@Tag(name = "Auth")
 public class AuthController {
 
     private final AuthService authService;
@@ -26,7 +27,6 @@ public class AuthController {
     private final JwtService jwtService;
 
     @PostMapping("/register")
-    @Tag(name="Auth")
     public ResponseEntity<ApiResponse<String>> register(@Valid @RequestBody RegisterRequest request, HttpServletRequest http) {
         authService.register(request, http);
         String message = messageSource.getMessage("registration.success", null, LocaleContextHolder.getLocale());
@@ -34,7 +34,6 @@ public class AuthController {
     }
 
     @GetMapping("/verify")
-    @Tag(name="Auth")
     public ResponseEntity<ApiResponse<String>> verifyEmail(@RequestParam String token) {
         boolean result = authService.verifyEmail(token);
         String key = result ? "verification.success" : "verification.invalid";
@@ -43,14 +42,11 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    @Tag(name="Auth")
     public ApiResponse<LoginResponse> login(@Valid @RequestBody LoginRequest request, HttpServletRequest http) {
         return authService.login(request, http);
     }
 
     @PostMapping("/logout")
-    @SecurityRequirement(name = "bearerAuth")
-    @Tag(name="Auth")
     public ResponseEntity<ApiResponse<String>> logout(HttpServletRequest request) {
         String authHeader = request.getHeader("Authorization");
         String token = authHeader.substring(7);
@@ -65,7 +61,6 @@ public class AuthController {
     }
 
     @PostMapping("/forgot-password")
-    @Tag(name="Auth")
     public ResponseEntity<ApiResponse<String>> forgotPassword(@RequestBody @Valid ForgotPasswordRequest request, HttpServletRequest http) {
         authService.forgotPassword(request, http);
         String message = messageSource.getMessage("forgotPassword.success", null, LocaleContextHolder.getLocale());
@@ -73,7 +68,6 @@ public class AuthController {
     }
 
     @PostMapping("/reset-password")
-    @Tag(name="Auth")
     public ResponseEntity<ApiResponse<String>> resetPassword(@RequestBody @Valid ResetPasswordRequest request, HttpServletRequest http) {
         authService.resetPassword(request, http);
         String message = messageSource.getMessage("resetPassword.success", null, LocaleContextHolder.getLocale());
@@ -81,7 +75,6 @@ public class AuthController {
     }
 
     @PostMapping("/refresh")
-    @Tag(name = "Auth")
     public ApiResponse<LoginResponse> refreshToken(@RequestParam("refreshToken") String refreshToken, HttpServletRequest http) {
         return authService.refreshToken(refreshToken, http);
     }

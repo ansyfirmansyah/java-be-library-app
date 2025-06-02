@@ -13,6 +13,8 @@ public class EmailValidatorUtil {
         try {
             Hashtable<String, String> env = new Hashtable<>();
             env.put("java.naming.factory.initial", "com.sun.jndi.dns.DnsContextFactory");
+            // DNS lookup ke domain menggunakan Java InitialDirContext + DnsContextFactory
+            // untuk query record MX (Mail Exchange)
             DirContext dirContext = new InitialDirContext(env);
             Attributes attrs = dirContext.getAttributes(domain, new String[]{"MX"});
             return attrs != null && attrs.get("MX") != null;

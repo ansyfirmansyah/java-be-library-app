@@ -33,7 +33,8 @@ public class OpenApiConfig {
                                         .bearerFormat("JWT")))
                 .tags(List.of(
                         new Tag().name("Auth").description("Endpoint untuk registrasi, login, logout, verifikasi"),
-                        new Tag().name("User").description("Endpoint untuk info pengguna dan manajemen akun")
+                        new Tag().name("Book").description("Endpoint untuk info buku"),
+                        new Tag().name("Rent").description("Endpoint untuk meminjam buku")
                 ));
     }
 }

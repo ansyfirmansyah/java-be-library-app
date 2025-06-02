@@ -31,7 +31,7 @@ public class CleanupTask {
     }
 
     @Scheduled(cron = "0 0 * * * *") // Every hour
-    public void cleanExpiredTokens() {
+    public void cleanExpiredRefreshTokens() {
         int delete = refreshTokenRepository.deleteAllExpiredSince(Instant.now());
         log.info("🧹 Running scheduled cleanup of expired refresh tokens: {} records", delete);
     }

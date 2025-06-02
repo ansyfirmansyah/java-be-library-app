@@ -8,6 +8,7 @@ import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -52,8 +53,15 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(ApiResponse.error(401, ex.getMessage()), HttpStatus.UNAUTHORIZED);
     }
 
+    @ExceptionHandler(AccessDeniedException.class)
+    public ResponseEntity<ApiResponse<String>> handleAccessDenied(AccessDeniedException ex) {
+        log.error("AccessDeniedException caught: {}", ex.getMessage());
+        return new ResponseEntity<>(ApiResponse.error(403, ex.getMessage()), HttpStatus.FORBIDDEN);
+    }
+
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ApiResponse<String>> handleGeneric(Exception ex) {
+        log.error("Root exception class: {}", ex.getClass().getName());
         log.error("Process failed, rolling back transaction: {}", ex.getMessage(), ex);
         String message = messageSource.getMessage("general.internalServerError", null, LocaleContextHolder.getLocale());
         return ResponseEntity.internalServerError().body(ApiResponse.error(500, message));
