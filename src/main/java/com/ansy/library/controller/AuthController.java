@@ -79,5 +79,11 @@ public class AuthController {
         String message = messageSource.getMessage("resetPassword.success", null, LocaleContextHolder.getLocale());
         return ResponseEntity.ok(ApiResponse.success(message));
     }
+
+    @PostMapping("/refresh")
+    @Tag(name = "Auth")
+    public ApiResponse<LoginResponse> refreshToken(@RequestParam("refreshToken") String refreshToken, HttpServletRequest http) {
+        return authService.refreshToken(refreshToken, http);
+    }
 }
 

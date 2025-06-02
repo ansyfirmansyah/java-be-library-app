@@ -4,10 +4,7 @@ import com.ansy.library.dto.*;
 import com.ansy.library.entity.*;
 import com.ansy.library.exception.RateLimitException;
 import com.ansy.library.exception.UnauthorizedException;
-import com.ansy.library.repository.PasswordResetTokenRepository;
-import com.ansy.library.repository.UserActivityAuditRepository;
-import com.ansy.library.repository.UserRepository;
-import com.ansy.library.repository.VerificationTokenRepository;
+import com.ansy.library.repository.*;
 import com.ansy.library.security.RedisRateLimiter;
 import com.ansy.library.utils.EmailValidatorUtil;
 import jakarta.servlet.http.HttpServletRequest;
@@ -35,6 +32,7 @@ public class AuthService {
     private final UserActivityAuditRepository auditRepository;
     private final VerificationTokenRepository tokenRepository;
     private final PasswordResetTokenRepository passwordResetTokenRepository;
+    private final RefreshTokenRepository refreshTokenRepository;
     private final MailService mailService;
     private final MessageSource messageSource;
     private final JwtService jwtService;
@@ -152,10 +150,20 @@ public class AuthService {
             String token = jwtService.generateToken(user.getId(), String.valueOf(user.getRole()), sessionId, issuedAt, expiredAt);
             redisSessionService.storeSession(user.getId(), sessionId, expiredAt);
 
+            String refreshTokenStr = UUID.randomUUID().toString();
+            RefreshToken refreshToken = RefreshToken.builder()
+                    .user(user)
+                    .token(refreshTokenStr)
+                    .expiresAt(issuedAt.plus(7, ChronoUnit.DAYS))
+                    .revoked(false)
+                    .build();
+            refreshTokenRepository.save(refreshToken);
+
             String message = messageSource.getMessage("login.success", null, LocaleContextHolder.getLocale());
             return ApiResponse.success(message,
                     LoginResponse.builder()
                             .token(token)
+                            .refreshToken(refreshTokenStr)
                             .expiredAt(expiredAt)
                             .build()
             );
@@ -173,6 +181,58 @@ public class AuthService {
                     .userAgent(ua)
                     .build());
         }
+    }
+
+    public ApiResponse<LoginResponse> refreshToken(String refreshTokenStr, HttpServletRequest request) {
+        RefreshToken token = refreshTokenRepository.findByToken(refreshTokenStr)
+                .orElseThrow(() -> {
+                    String message = messageSource.getMessage("refresh.invalid", null, LocaleContextHolder.getLocale());
+                    return new UnauthorizedException(message);
+                });
+
+        if (token.isRevoked() || token.getExpiresAt().isBefore(Instant.now())) {
+            String message = messageSource.getMessage("refresh.expired", null, LocaleContextHolder.getLocale());
+            throw new UnauthorizedException(message);
+        }
+
+        User user = token.getUser();
+
+        // invalidate old JWT session
+        String oldJwt = request.getHeader("Authorization");
+        if (oldJwt != null && oldJwt.startsWith("Bearer ")) {
+            String jwt = oldJwt.substring(7);
+            String oldSessionId = jwtService.parseToken(jwt).get("sid", String.class);
+            redisSessionService.invalidateSession(user.getId(), oldSessionId);
+        }
+
+        String sessionId = UUID.randomUUID().toString();
+        Instant issuedAt = Instant.now();
+        Instant expiredAt = issuedAt.plusSeconds(jwtService.getExpiration());
+
+        String jwt = jwtService.generateToken(user.getId(), String.valueOf(user.getRole()), sessionId, issuedAt, expiredAt);
+        redisSessionService.storeSession(user.getId(), sessionId, expiredAt);
+
+        // revoke old refresh token and generate a new one
+        token.setRevoked(true);
+        refreshTokenRepository.save(token);
+
+        String newRefreshTokenStr = UUID.randomUUID().toString();
+        RefreshToken newRefreshToken = RefreshToken.builder()
+                .user(user)
+                .token(newRefreshTokenStr)
+                .expiresAt(issuedAt.plus(7, ChronoUnit.DAYS))
+                .revoked(false)
+                .build();
+        refreshTokenRepository.save(newRefreshToken);
+
+        String message = messageSource.getMessage("refresh.success", null, LocaleContextHolder.getLocale());
+        return ApiResponse.success(message,
+                LoginResponse.builder()
+                        .token(jwt)
+                        .expiredAt(expiredAt)
+                        .refreshToken(newRefreshTokenStr)
+                        .build()
+        );
     }
 
     public void logout(String userId, String sessionId) {

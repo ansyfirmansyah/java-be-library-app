@@ -1,6 +1,7 @@
 package com.ansy.library.task;
 
 import com.ansy.library.repository.PasswordResetTokenRepository;
+import com.ansy.library.repository.RefreshTokenRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -17,14 +18,21 @@ import java.time.Instant;
 @Component
 @RequiredArgsConstructor
 @Slf4j
-public class PasswordResetCleanupTask {
+public class CleanupTask {
 
     private final PasswordResetTokenRepository tokenRepository;
+    private final RefreshTokenRepository refreshTokenRepository;
 
     @Scheduled(cron = "0 0 * * * *") // Setiap jam
     public void cleanupExpiredTokens() {
         Instant now = Instant.now();
         int deleted = tokenRepository.deleteByExpiresAtBeforeOrUsedIsTrue(now);
         log.info("🧹 Password reset tokens dibersihkan: {} records", deleted);
+    }
+
+    @Scheduled(cron = "0 0 * * * *") // Every hour
+    public void cleanExpiredTokens() {
+        int delete = refreshTokenRepository.deleteAllExpiredSince(Instant.now());
+        log.info("🧹 Running scheduled cleanup of expired refresh tokens: {} records", delete);
     }
 }
