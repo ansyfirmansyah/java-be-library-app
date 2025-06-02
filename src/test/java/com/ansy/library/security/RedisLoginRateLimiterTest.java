@@ -14,11 +14,11 @@ class RedisLoginRateLimiterTest {
     @Autowired
     private StringRedisTemplate redis;
 
-    private RedisLoginRateLimiter limiter;
+    private RedisRateLimiter limiter;
 
     @BeforeEach
     void setup() {
-        limiter = new RedisLoginRateLimiter(redis);
+        limiter = new RedisRateLimiter(redis);
     }
 
     @Test

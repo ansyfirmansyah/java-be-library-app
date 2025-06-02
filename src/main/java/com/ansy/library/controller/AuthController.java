@@ -1,9 +1,6 @@
 package com.ansy.library.controller;
 
-import com.ansy.library.dto.ApiResponse;
-import com.ansy.library.dto.LoginRequest;
-import com.ansy.library.dto.LoginResponse;
-import com.ansy.library.dto.RegisterRequest;
+import com.ansy.library.dto.*;
 import com.ansy.library.service.AuthService;
 import com.ansy.library.service.JwtService;
 import io.jsonwebtoken.Claims;
@@ -64,6 +61,22 @@ public class AuthController {
 
         authService.logout(userId, sessionId);
         String message = messageSource.getMessage("logout.success", null, LocaleContextHolder.getLocale());
+        return ResponseEntity.ok(ApiResponse.success(message));
+    }
+
+    @PostMapping("/forgot-password")
+    @Tag(name="Auth")
+    public ResponseEntity<ApiResponse<String>> forgotPassword(@RequestBody @Valid ForgotPasswordRequest request, HttpServletRequest http) {
+        authService.forgotPassword(request, http);
+        String message = messageSource.getMessage("forgotPassword.success", null, LocaleContextHolder.getLocale());
+        return ResponseEntity.ok(ApiResponse.success(message));
+    }
+
+    @PostMapping("/reset-password")
+    @Tag(name="Auth")
+    public ResponseEntity<ApiResponse<String>> resetPassword(@RequestBody @Valid ResetPasswordRequest request, HttpServletRequest http) {
+        authService.resetPassword(request, http);
+        String message = messageSource.getMessage("resetPassword.success", null, LocaleContextHolder.getLocale());
         return ResponseEntity.ok(ApiResponse.success(message));
     }
 }

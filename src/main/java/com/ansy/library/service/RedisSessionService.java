@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.Duration;
 import java.time.Instant;
+import java.util.Set;
 import java.util.UUID;
 
 @Service
@@ -23,6 +24,15 @@ public class RedisSessionService {
     public void invalidateSession(UUID userId, String sessionId) {
         String key = "SESSION:" + userId + ":" + sessionId;
         redisTemplate.delete(key);
+    }
+
+    public void invalidateAllSessionUser(UUID userId) {
+        // Hapus semua sesi aktif user dari Redis
+        String sessionPattern = "SESSION:" + userId + ":*";
+        Set<String> keys = redisTemplate.keys(sessionPattern);
+        if (!keys.isEmpty()) {
+            redisTemplate.delete(keys);
+        }
     }
 
     public boolean sessionExists(UUID userId, String sessionId) {

@@ -13,6 +13,7 @@ import org.springframework.stereotype.Component;
 public class AppProperties {
 
     private String verificationUrl;
+    private String forgotPasswordUrl;
     private String frontendBaseUrl;
     private String mailFrom;
     private String jwtSecret;
@@ -22,6 +23,9 @@ public class AppProperties {
     public void validate() {
         if (verificationUrl == null || verificationUrl.isBlank()) {
             throw new IllegalStateException("Missing required property: app.verification-url");
+        }
+        if (forgotPasswordUrl == null || forgotPasswordUrl.isBlank()) {
+            throw new IllegalStateException("Missing required property: app.forgot-password-url");
         }
         if (mailFrom == null || mailFrom.isBlank()) {
             throw new IllegalStateException("Missing required property: app.mail-from");

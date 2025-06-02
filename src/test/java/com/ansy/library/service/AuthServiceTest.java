@@ -1,13 +1,16 @@
 package com.ansy.library.service;
 
+import com.ansy.library.dto.ForgotPasswordRequest;
 import com.ansy.library.dto.RegisterRequest;
 import com.ansy.library.entity.Role;
 import com.ansy.library.entity.User;
 import com.ansy.library.entity.VerificationToken;
 import com.ansy.library.exception.RateLimitException;
+import com.ansy.library.repository.PasswordResetTokenRepository;
 import com.ansy.library.repository.UserRepository;
 import com.ansy.library.repository.UserActivityAuditRepository;
 import com.ansy.library.repository.VerificationTokenRepository;
+import com.ansy.library.security.RedisRateLimiter;
 import jakarta.servlet.http.HttpServletRequest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -15,6 +18,8 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.springframework.context.MessageSource;
+import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.data.redis.core.ValueOperations;
 
 import java.time.Instant;
 import java.util.Optional;
@@ -32,6 +37,9 @@ class AuthServiceTest {
     private UserRepository userRepository;
 
     @Mock
+    private PasswordResetTokenRepository passwordResetTokenRepository;
+
+    @Mock
     private UserActivityAuditRepository auditRepository;
 
     @Mock
@@ -42,6 +50,12 @@ class AuthServiceTest {
 
     @Mock
     private MailService mailService;
+
+    @Mock
+    private RedisRateLimiter rateLimiter;
+
+    @Mock
+    private StringRedisTemplate redisTemplate;
 
     @Mock
     private HttpServletRequest request;

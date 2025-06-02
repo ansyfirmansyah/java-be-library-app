@@ -22,4 +22,14 @@ public class MailService {
 
         mailSender.send(message);
     }
+
+    public void sendForgotPasswordEmail(String to, String token) {
+        SimpleMailMessage message = new SimpleMailMessage();
+        message.setFrom(properties.getMailFrom());
+        message.setTo(to);
+        message.setSubject("Link Reset Password Anda");
+        message.setText("Klik link berikut untuk reset password: " + properties.getForgotPasswordUrl() + "?token=" + token);
+
+        mailSender.send(message);
+    }
 }

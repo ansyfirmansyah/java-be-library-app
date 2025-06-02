@@ -28,7 +28,9 @@ public class SecurityConfig {
                                 "/actuator/health",
                                 "/auth/register",
                                 "/auth/login",
-                                "/auth/verify"
+                                "/auth/verify",
+                                "/auth/forgot-password",
+                                "/auth/reset-password"
                         ).permitAll()
                         .anyRequest().authenticated()
                 )

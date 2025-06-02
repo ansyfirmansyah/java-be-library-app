@@ -8,7 +8,7 @@ import java.time.Duration;
 
 @Component
 @RequiredArgsConstructor
-public class RedisLoginRateLimiter {
+public class RedisRateLimiter {
 
     private final StringRedisTemplate redis;
 
@@ -24,9 +24,23 @@ public class RedisLoginRateLimiter {
     public void recordFailure(String email, String ip) {
         String key = getKey(email, ip);
         Long current = redis.opsForValue().increment(key);
-        if (current == 1) {
+        if (current != null && current == 1) {
             redis.expire(key, BLOCK_DURATION);
         }
+    }
+
+    public boolean acquireRateLimit(String key, int seconds, int maxLimit) {
+        // Periksa limit
+        String attempts = redis.opsForValue().get(key);
+        if (attempts != null && Integer.parseInt(attempts) >= maxLimit) {
+            return false;
+        }
+        // Jika belum melebihi limit maka increase attempt
+        Long current = redis.opsForValue().increment(key);
+        if (current != null && current == 1) {
+            redis.expire(key, Duration.ofSeconds(seconds));
+        }
+        return true;
     }
 
     public void clear(String email, String ip) {
