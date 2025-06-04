@@ -5,14 +5,13 @@ import jakarta.validation.constraints.NotBlank;
 import lombok.Getter;
 import lombok.Setter;
 
-@Getter
-@Setter
-public class LoginRequest {
+public record LoginRequest(
 
-    @Email(message = "{login.invalidEmail}")
-    @NotBlank(message = "{login.required.email}")
-    private String email;
+        @Email(message = "{login.invalidEmail}")
+        @NotBlank(message = "{login.required.email}")
+        String email,
 
-    @NotBlank(message = "{login.required.password}")
-    private String password;
+        @NotBlank(message = "{login.required.password}")
+        String password
+) {
 }

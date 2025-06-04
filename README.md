@@ -35,6 +35,19 @@
    - Bearer token diinput pada button Authorize
    - Session dicabut, bearer token tidak bisa digunakan lagi
 
+## 📁 Project Structure
+- src/main/java/com/ansy/library/ – Application source code 
+- src/test/java/com/ansy/library/ – Unit & integration tests 
+- src/main/resources/ – Config & DB migration 
+- docker-compose.yml – Container orchestration 
+- pom.xml – Maven dependencies
+
+## ⚙️ Environment Variables
+- `SPRING_MAIL_USERNAME` – SMTP email
+- `SPRING_MAIL_PASSWORD` – SMTP password
+- `JWT_SECRET` – JWT encryption secret
+- `REDIS_HOST`, `REDIS_PORT` – Redis/Dragonfly config
+
 ## 🔐 Auth Feature:
 1. Register via email only, validasi domain email. 
 2. Email verifikasi (isi parameter SMTP di application-docker.yml)

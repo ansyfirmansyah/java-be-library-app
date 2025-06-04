@@ -40,7 +40,7 @@ public class AuthService {
     private final RedisRateLimiter rateLimiter;
 
     public void register(RegisterRequest request, HttpServletRequest http) {
-        String email = request.getEmail();
+        String email = request.email();
         String ip = http.getRemoteAddr();
         boolean success = false;
         UUID userId = null;
@@ -63,7 +63,7 @@ public class AuthService {
             }
 
             String salt = BCrypt.gensalt();
-            String hashedPassword = BCrypt.hashpw(request.getPassword(), salt);
+            String hashedPassword = BCrypt.hashpw(request.password(), salt);
 
             User user = User.builder()
                     .email(email)
@@ -117,7 +117,7 @@ public class AuthService {
     }
 
     public ApiResponse<LoginResponse> login(LoginRequest request, HttpServletRequest http) {
-        String email = request.getEmail();
+        String email = request.email();
         String ip = http.getRemoteAddr();
         String ua = http.getHeader("User-Agent");
         UUID userId = null;
@@ -129,7 +129,7 @@ public class AuthService {
         }
 
         try {
-            User user = (User) userRepository.findByEmailIgnoreCase(request.getEmail())
+            User user = (User) userRepository.findByEmailIgnoreCase(request.email())
                     .orElseThrow(() -> new UnauthorizedException("login.invalidCredentials"));
 
             if (!user.isEmailVerified()) {
@@ -137,7 +137,7 @@ public class AuthService {
                 throw new UnauthorizedException(message);
             }
 
-            if (!BCrypt.checkpw(request.getPassword(), user.getPassword())) {
+            if (!BCrypt.checkpw(request.password(), user.getPassword())) {
                 String message = messageSource.getMessage("login.invalidCredentials", null, LocaleContextHolder.getLocale());
                 throw new UnauthorizedException(message);
             }
@@ -251,22 +251,22 @@ public class AuthService {
     }
 
     public void forgotPassword(ForgotPasswordRequest request, HttpServletRequest http) {
-        String email = request.getEmail();
+        String email = request.email();
         boolean success = false;
         UUID userId = null;
 
         try {
             // Rate Limit untuk forgot password
-            String emailKey = "RATE_LIMIT:FORGOT_PASSWORD:" + request.getEmail().toLowerCase();
+            String emailKey = "RATE_LIMIT:FORGOT_PASSWORD:" + request.email().toLowerCase();
             boolean acquireRateLimit = rateLimiter.acquireRateLimit(emailKey, 60, 5);
             if (!acquireRateLimit) {
-                log.warn("🚫 Rate limit hit for forgot-password: {}", request.getEmail());
+                log.warn("🚫 Rate limit hit for forgot-password: {}", request.email());
                 return; // Silent for security
             }
 
-            Optional<Object> userOpt = userRepository.findByEmailIgnoreCase(request.getEmail());
+            Optional<Object> userOpt = userRepository.findByEmailIgnoreCase(request.email());
             if (userOpt.isEmpty()) {
-                log.warn("🔒 Forgot password: Email not found -> {}", request.getEmail());
+                log.warn("🔒 Forgot password: Email not found -> {}", request.email());
                 return; // Silent for security
             }
             User user = (User) userOpt.get();
@@ -301,7 +301,7 @@ public class AuthService {
         boolean success = false;
         UUID userId = null;
         try{
-            Optional<PasswordResetToken> tokenOpt = passwordResetTokenRepository.findByToken(request.getToken());
+            Optional<PasswordResetToken> tokenOpt = passwordResetTokenRepository.findByToken(request.token());
             if (tokenOpt.isEmpty()) {
                 String message = messageSource.getMessage("resetPassword.token.notFound", null, LocaleContextHolder.getLocale());
                 throw new IllegalArgumentException(message);
@@ -317,7 +317,7 @@ public class AuthService {
             email = user.getEmail();
             userId = user.getId();
             String salt = BCrypt.gensalt();
-            String hashedPassword = BCrypt.hashpw(request.getNewPassword(), salt);
+            String hashedPassword = BCrypt.hashpw(request.newPassword(), salt);
             user.setPassword(hashedPassword);
             userRepository.save(user);
 

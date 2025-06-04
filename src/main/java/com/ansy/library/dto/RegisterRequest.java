@@ -6,18 +6,18 @@ import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
 
-@Data
-public class RegisterRequest {
+public record RegisterRequest(
 
-    @Email(message = "{registration.invalidEmail}")
-    @NotBlank
-    private String email;
+        @Email(message = "{registration.invalidEmail}")
+        @NotBlank
+        String email,
 
-    @NotBlank
-    @Size(min = 8, message = "{registration.invalidShortPassword}")
-    @Pattern(
-            regexp = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)[A-Za-z\\d]{8,}$",
-            message = "{registration.invalidSimplePassword}"
-    )
-    private String password;
+        @NotBlank
+        @Size(min = 8, message = "{registration.invalidShortPassword}")
+        @Pattern(
+                regexp = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)[A-Za-z\\d]{8,}$",
+                message = "{registration.invalidSimplePassword}"
+        )
+        String password
+) {
 }

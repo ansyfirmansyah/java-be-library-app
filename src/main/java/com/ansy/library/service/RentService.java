@@ -45,7 +45,7 @@ public class RentService {
             throw new IllegalStateException(message);
         }
 
-        Book book = bookRepository.findById(request.getBookId())
+        Book book = bookRepository.findById(request.bookId())
                 .orElseThrow(() -> new IllegalArgumentException(
                         messageSource.getMessage("book.notFound", null, LocaleContextHolder.getLocale())
                 ));
@@ -63,7 +63,7 @@ public class RentService {
                 .user(user)
                 .book(book)
                 .rentedAt(Instant.now())
-                .dueAt(Instant.now().plus(request.getDays(), ChronoUnit.DAYS))
+                .dueAt(Instant.now().plus(request.days(), ChronoUnit.DAYS))
                 .build();
 
         Rent saved = rentRepository.save(rent);
