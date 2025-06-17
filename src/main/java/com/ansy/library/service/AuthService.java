@@ -87,7 +87,7 @@ public class AuthService {
 
             tokenRepository.save(verificationToken);
 
-            mailService.sendVerificationEmail(user.getEmail(), token);
+//            mailService.sendVerificationEmail(user.getEmail(), token);
         } finally {
             auditRepository.save(UserActivityAudit.builder()
                     .id(UUID.randomUUID())

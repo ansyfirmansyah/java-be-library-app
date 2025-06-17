@@ -70,9 +70,7 @@ class AuthServiceTest {
 
     @Test
     void registerSuccess() {
-        RegisterRequest registerRequest = new RegisterRequest();
-        registerRequest.setEmail("test@gmail.com");
-        registerRequest.setPassword("Password1!");
+        RegisterRequest registerRequest = new RegisterRequest("test@gmail.com", "Password1!");
 
         when(userRepository.existsByEmail("test@gmail.com")).thenReturn(false);
         when(auditRepository.countByIpAddressAndActivityTypeAndActivityTimeAfter(any(), any(), any())).thenReturn(0L);
@@ -96,9 +94,7 @@ class AuthServiceTest {
 
     @Test
     void registerFail_EmailAlreadyExists() {
-        RegisterRequest registerRequest = new RegisterRequest();
-        registerRequest.setEmail("test@gmail.com");
-        registerRequest.setPassword("Password1!");
+        RegisterRequest registerRequest = new RegisterRequest("test@gmail.com", "Password1!");
 
         when(userRepository.existsByEmail("test@gmail.com")).thenReturn(true);
         when(auditRepository.countByIpAddressAndActivityTypeAndActivityTimeAfter(any(), any(), any())).thenReturn(0L);
@@ -114,9 +110,7 @@ class AuthServiceTest {
 
     @Test
     void registerFail_RateLimitExceeded() {
-        RegisterRequest registerRequest = new RegisterRequest();
-        registerRequest.setEmail("test@gmail.com");
-        registerRequest.setPassword("Password1!");
+        RegisterRequest registerRequest = new RegisterRequest("test@gmail.com", "Password1!");
 
         when(auditRepository.countByIpAddressAndActivityTypeAndActivityTimeAfter(any(), any(), any())).thenReturn(99L);
         when(request.getRemoteAddr()).thenReturn("127.0.0.1");

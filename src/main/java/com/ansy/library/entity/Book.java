@@ -15,7 +15,7 @@ import java.util.UUID;
 public class Book {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.AUTO) //Hibernate/JPA/Database yang generate id
     private UUID id;
 
     @Column(nullable = false)

@@ -60,9 +60,7 @@ public class AuthControllerIntegrationTest {
     @Test
     @Transactional
     void register_shouldReturnSuccessOrFailure() throws Exception {
-        RegisterRequest request = new RegisterRequest();
-        request.setEmail("testuser@example.com");
-        request.setPassword("Password1");
+        RegisterRequest request = new RegisterRequest("testuser@example.com", "Password1");
 
         mockMvc.perform(post("/auth/register")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -83,9 +81,7 @@ public class AuthControllerIntegrationTest {
         user.setUpdatedAt(Instant.now());
         userRepository.save(user);
 
-        RegisterRequest request = new RegisterRequest();
-        request.setEmail("existuser@example.com");
-        request.setPassword("Password1");
+        RegisterRequest request = new RegisterRequest("existuser@example.com", "Password1");
 
         mockMvc.perform(post("/auth/register")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -135,9 +131,7 @@ public class AuthControllerIntegrationTest {
     @Test
     @Transactional
     void register_shouldFailIfEmailDomainInvalid() throws Exception {
-        RegisterRequest request = new RegisterRequest();
-        request.setEmail("user@invalid-domain-xyz123.com");
-        request.setPassword("Password1");
+        RegisterRequest request = new RegisterRequest("user@invalid-domain-xyz123.com", "Password1");
 
         mockMvc.perform(post("/auth/register")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -150,9 +144,7 @@ public class AuthControllerIntegrationTest {
     @Test
     @Transactional
     void register_shouldFailIfPasswordWeak() throws Exception {
-        RegisterRequest request = new RegisterRequest();
-        request.setEmail("user@example.com");
-        request.setPassword("12345678"); // no uppercase or lowercase mix
+        RegisterRequest request = new RegisterRequest("user@example.com", "12345678"); // no uppercase or lowercase mix
 
         mockMvc.perform(post("/auth/register")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -173,9 +165,7 @@ public class AuthControllerIntegrationTest {
         user.setUpdatedAt(Instant.now());
         user = userRepository.save(user);
 
-        LoginRequest request = new LoginRequest();
-        request.setEmail("loginuser@example.com");
-        request.setPassword("Password1");
+        LoginRequest request = new LoginRequest("loginuser@example.com", "Password1");
 
         mockMvc.perform(post("/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -197,9 +187,7 @@ public class AuthControllerIntegrationTest {
         user.setUpdatedAt(Instant.now());
         user = userRepository.save(user);
 
-        LoginRequest request = new LoginRequest();
-        request.setEmail("failuser@example.com");
-        request.setPassword("WrongPassword");
+        LoginRequest request = new LoginRequest("failuser@example.com", "WrongPassword");
 
         mockMvc.perform(post("/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -220,9 +208,7 @@ public class AuthControllerIntegrationTest {
         user.setUpdatedAt(Instant.now());
         userRepository.save(user);
 
-        LoginRequest request = new LoginRequest();
-        request.setEmail("ratelimit@example.com");
-        request.setPassword("WrongPassword");
+        LoginRequest request = new LoginRequest("ratelimit@example.com", "WrongPassword");
 
         for (int i = 0; i < 5; i++) {
             mockMvc.perform(post("/auth/login")
